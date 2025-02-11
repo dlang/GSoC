@@ -33,7 +33,7 @@ Ideally the bot could also store a history of performance regressions within a w
 
 ## Project milestones:
 
-1. Do an analysis of what is the best way to publish the results: it could be a github action, a bot that sends data to website.
+1. Analyze the best way to publish the results: it could be a GitHub action, a bot that sends data to a website.
 Depending on your skills and preferences, we expect you propose something and toghether we will decide what's best.
 1. Implement the initial part that simply collects how long running the testing pipeline took and publishes the result.
 1. Decide on other metrics that need to be collected and implement them.
