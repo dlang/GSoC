@@ -17,8 +17,9 @@ nav_order: 3
 ## Description
 
 The D compiler currently does not have an automated performance regression test.
-Oftentimes pull requests that claim to improve compiler performance are being made (be it spatial or temporal) however, it's up to the reviewer to actually believe the committer or to test things on their own.
-To make things simpler and more transparent we want to implement a bot that monitores all the pull requests that are being made to the compiler codebase and analyze the compiler performance with and without the pull request.
+Oftentimes pull requests that claim to improve compiler performance are being made (be it spatial or temporal).
+However, it's up to the reviewer to actually believe the committer or to test things on their own.
+To make things simpler and more transparent, we want to implement a bot that monitors all the pull requests made to the compiler codebase and analyzes the compiler's performance with and without the pull request.
 
 The list of stats should include, but not be limited to:
 
