@@ -4,11 +4,20 @@ Dlang projects for Google Summer of Code
 
 ## Deployment
 
-This repository is deployed at http://dlang.github.io/gsoc.
-You can build and inspect the website locally using the provided Makefile:
+This repository is deployed at:  
+🔗 **[https://alihaider332.github.io/GSoC-1/](https://alihaider332.github.io/GSoC-1/)**  
 
-1. Run `make install` to install the required dependencies
+### Running the Website Locally
 
-1. Run `make serve` to build the website.
+You can build and inspect the website locally using the provided `Makefile`:
 
-1. Access the website at http://127.0.0.1:4000/.
+1. Install the required dependencies:
+   ```bash
+   make install
+   ```
+2. Build and serve the website:
+   ```bash
+   make serve
+   ```
+3. Access the website at:  
+   **http://127.0.0.1:4000/**  
