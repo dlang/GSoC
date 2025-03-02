@@ -5,7 +5,7 @@ Dlang projects for Google Summer of Code
 ## Deployment
 
 This repository is deployed at:  
-🔗 **[https://alihaider332.github.io/GSoC-1/](https://alihaider332.github.io/GSoC-1/)**  
+🔗 **https://alihaider332.github.io/GSoC-1/**  
 
 ### Running the Website Locally
 
