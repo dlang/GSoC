@@ -13,17 +13,15 @@ Mentor: [Teo Dutu](https://github.com/teodutu)
 
 ## Project Overview
 
-**D** is a systems programming language that features some built-in high-level constructs and operations such as casting, array creation, array append, associative arrays, and more. Unlike other languages, these are part of the language syntax and not part of the standard library, so they do not require the programmer to explicitly call any function. This is made possible by runtime hooks, which are functions that replace these high-level constructs. The process is called "lowering" and is done by the compiler during semantic analysis phase.
+**D** is a systems programming language that features some built-in high-level constructs and operations such as casting, array creation, array append, associative arrays, and more. Unlike other languages, these are part of the language syntax and not part of the standard library, so they do not require the programmer to explicitly call any function. This is made possible by runtime hooks, which are functions that replace these high-level constructs. The process is called "lowering" and is done by the compiler during the semantic analysis phase.
 
-Initially, these hooks were implemented as normal functions that have a `TypeInfo` parameter, which is a type descriptor that contains information about the type of the value being operated on. This approach is inefficient, as it relies on type information queried at runtime, introducing some overhead that is, in most cases, unnecessary, because the compiler already has this information at compile time and can inject it directly into the hook. Since D features a powerful template system, there has been a push to replace these runtime hooks with template-based implementations, but not all hooks have been translated yet.
+Initially, these hooks were implemented as normal functions that have a `TypeInfo` parameter, which is a type descriptor that contains information about the type of the value being operated on. This approach is inefficient, as it relies on type information being queried at runtime, introducing some overhead that is, in most cases, unnecessary, because the compiler already has this information at compile time and can inject it directly into the hook. Since D features a powerful template system, there has been a push to replace these runtime hooks with template-based implementations, but not all hooks had been translated yet.
 
-The goal of this project is to translate the remaining DRuntime hooks to templates, which will allow for potentially better optimization opportunities, on top of improving the maintainability of the codebase and ease of integration by other compilers, such as LDC and GDC.
+The goal of this project was to translate the remaining DRuntime hooks to templates, which will allow for potentially better optimization opportunities, on top of improving the maintainability of the codebase and ease of integration by other compilers, such as LDC and GDC.
 
 ## Contributions
 
-My contributions are split into mutliple smaller PRs, each focusing on a specific hook, or addressing some issues. The following is a list of the PRs I worked on during the GSoC period:
-
-<!-- The list of PRs which introduced the template-based implementations of the hooks is as follows: -->
+My contributions are split into multiple smaller PRs, each focusing on a specific hook, or addressing related issues. The following is a list of the PRs I worked on during the GSoC period:
 
 - **Templated Hooks**:
   - **Array Hooks**: [\_d_arraysetcapacity](https://github.com/dlang/dmd/pull/21143), [\_d_arrayappendcTX](https://github.com/dlang/dmd/pull/21205), [\_d_arrayshrinkfit](https://github.com/dlang/dmd/pull/21373), [\_adEq2](https://github.com/dlang/dmd/pull/21513), [\_d_arrayliteralTX](https://github.com/dlang/dmd/pull/21567)
@@ -31,11 +29,11 @@ My contributions are split into mutliple smaller PRs, each focusing on a specifi
 - **Misc**:
   - **Refactoring**: [Refactor `_d_arrayliteralTX`](https://github.com/dlang/dmd/pull/21573), [Cleanup unused symbols](https://github.com/dlang/dmd/pull/21629), [Move lowering of `ConstructExp` to a dedicated field](https://github.com/dlang/dmd/pull/21706), [Refactor `_d_cast`](https://github.com/dlang/dmd/pull/21727)
   - **Bug Fixes**: [Add missing exception handling in `_d_arrayappendT`](https://github.com/dlang/dmd/pull/21699), [Account for lowering during post-order visit on `CatExp`](https://github.com/dlang/dmd/pull/21701)
-  - **Performance**: [Imporve performance of `_d_arrayctor`](https://github.com/dlang/dmd/pull/21675)
+  - **Performance**: [Improve performance of `_d_arrayctor`](https://github.com/dlang/dmd/pull/21675)
 
-For some of these hooks, the lowering was already implemented in the compiler and my only concern was the templatization of the hook itself, but for most of them I needed to modify the frontend, usually `expressionsem.d` and `e2ir.d`, to introduce the lowering logic. This was often not a trivial task, as I had to ensure the same behavior as the previous implementation and new issues/bugs were discovered in the process. That's why a fairly large part of my time was spent on debugging and testing.
+For some of these hooks, the lowering was already implemented in the compiler and my only concern was the templatization of the hook itself, but for most of them I needed to modify the frontend, usually `expressionsem.d` and `e2ir.d`, to introduce the lowering logic. This was often not a trivial task, as I had to ensure the behavior matched the previous implementation and new issues/bugs were discovered in the process. That's why a fairly large part of my time was spent on debugging and testing.
 
-On top of the work to the dmd compiler, I have also contributed to the repository dedicated to [hook benchmarks](https://github.com/teodutu/druntime-hooks-benchmarks), which was started by my mentor, Teo Dutu. This was a great way to test any performance improvements or regressions introduced by the new template-based implementations, allowing me to apply fixes as needed. All the PRs I made to this repo can be found in the [Pull Requests section](https://github.com/teodutu/druntime-hooks-benchmarks/pulls?q=is%3Apr+is%3Aclosed+author%3AAlbert24GG).
+In addition to my work on the DMD compiler, I have also contributed to the repository dedicated to [hook benchmarks](https://github.com/teodutu/druntime-hooks-benchmarks), which was started by my mentor, Teo Dutu. This was a great way to test any performance improvements or regressions introduced by the new template-based implementations, allowing me to apply fixes as needed. All the PRs I made to this repo can be found in the [Pull Requests section](https://github.com/teodutu/druntime-hooks-benchmarks/pulls?q=is%3Apr+is%3Aclosed+author%3AAlbert24GG).
 
 During this period, I also documented my progress through weekly forum posts on the [D Programming Language forum](https://forum.dlang.org/group/general):
 
@@ -86,14 +84,14 @@ Below are two tables summarizing the performance gains running the benchmarks (e
 > - Each test's run time is measured over 1 million iterations, the results being averaged over multiple runs, usually 20.
 > - The commits tested for the templated/non-templated hooks are usually adjacent, so that the differences are minimized, but in some cases there might be gaps of a few commits. That happened, for example, when the templated hook made use of different GC features which made it slower, but a later commit improved the performance by either optimizing the hook itself or the GC feature used.
 
-As you can see, GDC exhibits some inconsistent results for some of the hooks, with both performance gains and losses depending on the test parameters. This in unlike what we have seen with LDC, which indicates that GDC doesn't optimize the code as well as LDC on our testing system. To support this claim, I have selected `_d_arrayappendT` as an example and ran it again under `perf` on both the testing machine and a different one, a Ryzen 7 6800hs with 16GB of RAM, running Arch Linux, kernel 6.16.1, libc 2.42.
+As you can see, GDC exhibits some inconsistent results for some of the hooks, with both performance gains and losses depending on the test parameters. This is unlike what we have seen with LDC, which indicates that GDC doesn't optimize the code as well as LDC on our testing system. To support this claim, I have selected `_d_arrayappendT` as an example and ran it again under `perf` on both the testing machine and a different one, a Ryzen 7 6800hs with 16GB of RAM, running Arch Linux, kernel 6.16.1, libc 2.42.
 The command used is:
 
 ```bash
 perf stat -e migrations,instructions,branches,branch-misses,cache-references,cache-misses,faults -ddd taskset -c 0 ./array_benchmark
 ```
 
-What I observed was that although the absolute performance is overall worse on the Ryzen, taking more time to run the same tests, there is a performance gain (19-30%) when going from the non-templated hook to the templated one, which is unlike the Intel setup. Considering that the binaries on both machines are virtually identical, and interpreting the output of `perf`, it seems to me that the problem may be related to to the branch predictor, branch miss rate being noticeably higher for the lower performing tests, i.e. in case of the templated hook on Intel and the non-templated hook on AMD. It is not yet clear whether this is the root cause of the performance regression on Intel, but it is certainly something to consider for future analysis.
+What I observed was that although the absolute performance is overall worse on the Ryzen, taking more time to run the same tests, there is a performance gain (19-30%) when going from the non-templated hook to the templated one, which is unlike the Intel setup. Considering that the binaries on both machines are virtually identical, and interpreting the output of `perf`, it seems to me that the problem may be related to the branch predictor, branch miss rate being noticeably higher for the lower performing tests, i.e. in case of the templated hook on Intel and the non-templated hook on AMD. It is not yet clear whether this is the root cause of the performance regression on Intel, but it is certainly something to consider for future analysis.
 
 ## Future Work
 
