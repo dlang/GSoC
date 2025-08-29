@@ -84,16 +84,22 @@ Below are two tables summarizing the performance gains running the benchmarks (e
 > - Each test's run time is measured over 1 million iterations, the results being averaged over multiple runs, usually 20.
 > - The commits tested for the templated/non-templated hooks are usually adjacent, so that the differences are minimized, but in some cases there might be gaps of a few commits. That happened, for example, when the templated hook made use of different GC features which made it slower, but a later commit improved the performance by either optimizing the hook itself or the GC feature used.
 
-As you can see, GDC exhibits some inconsistent results for some of the hooks, with both performance gains and losses depending on the test parameters. This is unlike what we have seen with LDC, which indicates that GDC doesn't optimize the code as well as LDC on our testing system. To support this claim, I have selected `_d_arrayappendT` as an example and ran it again under `perf` on both the testing machine and a different one, a Ryzen 7 6800hs with 16GB of RAM, running Arch Linux, kernel 6.16.1, libc 2.42.
-The command used is:
+As you can see, GDC exhibits some inconsistent results for some of the hooks, with both performance gains and losses depending on the test parameters. This is unlike what we have seen with LDC, which indicates that GDC doesn't optimize the code as well as LDC on our testing system.
 
-```bash
-perf stat -e migrations,instructions,branches,branch-misses,cache-references,cache-misses,faults -ddd taskset -c 0 ./array_benchmark
-```
+With some help from [Iain](https://github.com/ibuclaw), the maintainer of GDC, we discovered that the performance regression was due to a lack of inlining for the templates. By default, D templates are emitted as weak symbols, which means that a function's body could be overwritten at link time, so due to the One Definition Rule, the compiler cannot inline them. GDC is apparently the only D compiler that adheres to this rule. To instead emit the templates to COMDAT sections, which allows inlining, the `-fno-weak-templates` flag needs to be passed to GDC. After doing so, the performance improved significantly, as shown in the table below:
 
-What I observed was that although the absolute performance is overall worse on the Ryzen, taking more time to run the same tests, there is a performance gain (19-30%) when going from the non-templated hook to the templated one, which is unlike the Intel setup. Considering that the binaries on both machines are virtually identical, and interpreting the output of `perf`, it seems to me that the problem may be related to the branch predictor, branch miss rate being noticeably higher for the lower performing tests, i.e. in case of the templated hook on Intel and the non-templated hook on AMD. It is not yet clear whether this is the root cause of the performance regression on Intel, but it is certainly something to consider for future analysis.
+| Hook                | Performance Gain |
+| ------------------- | :--------------: |
+| `_d_arrayappendT`   |    -17 - 55%     |
+| `_d_arrayassign`    |     27 - 99%     |
+| `_d_newarrayT`      |     5 - 13%      |
+| `_d_newarrayiT`     |     20 - 41%     |
+| `_d_newarraymTX_2D` |     19 - 41%     |
+| `_d_newarraymTX_3D` |     27 - 33%     |
 
 ## Future Work
+
+Based on the benchmark results above, the only noticeable performance issue seems to be with some tests of the `_d_arrayappendT` hook when using GDC. Further investigation would be required to determine the cause and implement a fix.
 
 Given that real performance changes will be seen with LDC and GDC, the next step is to perform benchmarks on the hooks as soon as they are integrated into these compilers. This will allow us to observe any performance regressions, find the root cause of the issue and fix it. On top of that, some of the hooks directly call other hooks that may not have been integrated when I performed the benchmarks presented above. Therefore, it would be ideal to rerun all benchmarks once all the templated hooks are integrated into the compilers, so that any performance dependencies are accounted for.
 
