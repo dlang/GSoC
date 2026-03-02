@@ -1,6 +1,6 @@
 ---
 parent: DLang GSoC 2026 Project Ideas
-nav_order: ???
+nav_order: 5
 ---
 
 # Dcompute Metal Backend
