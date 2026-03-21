@@ -8,7 +8,7 @@ has_children: true
 D is a general-purpose programming language with static typing, systems-level access, and C-like syntax.
 With the D Programming Language, write fast, read fast, and run fast.
 
-D allows writing large code fragments without redundantly specifying types, like dynamic languages do.
+D allows writing large code fragments without redundantly specifying types, similar to dynamic languages.
 On the other hand, static inference deduces types and other code properties, giving the best of both the static and the dynamic worlds.
 
 Automatic memory management makes for safe, simple, and robust code.
